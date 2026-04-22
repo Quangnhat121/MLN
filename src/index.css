@@ -2442,6 +2442,9 @@ h1, h2, h3 {
 
 /* ── Lo To Minigame ───────────────────────── */
 .loto-wrap {
+  --loto-accent: #ffe14d;
+  --loto-accent-strong: #ffbf2f;
+  --loto-accent-soft: rgba(255, 225, 77, 0.35);
   position: relative;
   min-height: 100vh;
   padding: 6rem 1.25rem 4rem;
@@ -2496,7 +2499,7 @@ h1, h2, h3 {
   margin: 0.7rem 0 0.4rem;
   font-size: clamp(2.2rem, 5vw, 4rem);
   line-height: 1;
-  color: #ffe14d;
+  color: var(--loto-accent);
   text-transform: uppercase;
 }
 
@@ -2504,6 +2507,51 @@ h1, h2, h3 {
   margin: 0;
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.86);
+}
+
+.loto-color-screen {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 1.2rem 1rem 2rem;
+}
+
+.loto-color-prompt {
+  font-size: clamp(1.35rem, 2.5vw, 2.05rem);
+  margin: 0 0 1.35rem;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.loto-color-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.3rem;
+}
+
+.loto-color-card {
+  width: 112px;
+  height: 112px;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.07);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.loto-color-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.loto-color-chip {
+  width: 84%;
+  height: 84%;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
 .loto-main-grid {
@@ -2541,22 +2589,22 @@ h1, h2, h3 {
   font-weight: 700;
   cursor: pointer;
   color: #f2f9ff;
-  background: #2ca8e9;
+  background: var(--loto-accent);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .loto-cell:nth-child(even) {
   background: #f5f5f5;
-  color: #2ca8e9;
+  color: var(--loto-accent);
 }
 
 .loto-cell:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: 0 10px 24px rgba(50, 183, 255, 0.35);
+  box-shadow: 0 10px 24px var(--loto-accent-soft);
 }
 
 .loto-cell.drawn {
-  box-shadow: 0 0 0 4px rgba(255, 225, 77, 0.95), 0 0 22px rgba(255, 225, 77, 0.5);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.95), 0 0 22px var(--loto-accent-soft);
   animation: lotoPulse 1.1s ease-in-out infinite;
 }
 
@@ -2565,7 +2613,7 @@ h1, h2, h3 {
 }
 
 .loto-cell.correct {
-  background: #30b2f0;
+  background: var(--loto-accent);
   color: #fff;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6);
 }
@@ -2588,6 +2636,22 @@ h1, h2, h3 {
   display: flex;
   gap: 0.65rem;
   flex-wrap: wrap;
+}
+
+.loto-color-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.loto-color-badge strong {
+  color: var(--loto-accent);
 }
 
 .loto-btn {
@@ -2615,8 +2679,8 @@ h1, h2, h3 {
 }
 
 .loto-btn.spin {
-  background: linear-gradient(135deg, #ffe14d, #ffbf2f);
-  color: #1d1d1d;
+  background: linear-gradient(135deg, var(--loto-accent), var(--loto-accent-strong));
+  color: #fff;
 }
 
 .loto-btn.submit,
@@ -2666,9 +2730,9 @@ h1, h2, h3 {
   display: inline-block;
   padding: 0.26rem 0.72rem;
   border-radius: 999px;
-  background: rgba(255, 225, 77, 0.16);
-  border: 1px solid rgba(255, 225, 77, 0.5);
-  color: #ffe14d;
+  background: var(--loto-accent-soft);
+  border: 1px solid var(--loto-accent);
+  color: var(--loto-accent);
   font-weight: 700;
 }
 
@@ -2686,7 +2750,7 @@ h1, h2, h3 {
 
 .loto-option {
   width: 100%;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 999px;
   padding: 0.95rem 1.2rem;
   display: flex;
@@ -2704,7 +2768,8 @@ h1, h2, h3 {
 }
 
 .loto-option.picked {
-  background: #ffe14d;
+  background: var(--loto-accent-soft);
+  border-color: var(--loto-accent);
 }
 
 .loto-btn.submit {
@@ -2784,6 +2849,12 @@ h1, h2, h3 {
 @media (max-width: 600px) {
   .loto-wrap {
     padding-top: 5rem;
+  }
+
+  .loto-color-card {
+    width: 88px;
+    height: 88px;
+    border-radius: 18px;
   }
 
   .loto-heading h2 {

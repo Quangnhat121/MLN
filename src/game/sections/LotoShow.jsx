@@ -119,6 +119,37 @@ const QUESTION_MAP = {
 
 const LABELS = ["A", "B", "C", "D"];
 
+const COLOR_OPTIONS = [
+  {
+    id: "blue",
+    name: "Xanh dương",
+    color: "#3ca7e5",
+    strong: "#2f83bb",
+    soft: "rgba(60, 167, 229, 0.35)",
+  },
+  {
+    id: "pink",
+    name: "Hồng",
+    color: "#e55ab7",
+    strong: "#be3e95",
+    soft: "rgba(229, 90, 183, 0.35)",
+  },
+  {
+    id: "yellow",
+    name: "Vàng",
+    color: "#f3d54d",
+    strong: "#dfb827",
+    soft: "rgba(243, 213, 77, 0.35)",
+  },
+  {
+    id: "green",
+    name: "Xanh lá",
+    color: "#79d84f",
+    strong: "#57b536",
+    soft: "rgba(121, 216, 79, 0.35)",
+  },
+];
+
 function normalizeText(value) {
   return value
     .normalize("NFD")
@@ -134,6 +165,7 @@ function findWinningLine(correctNumbers) {
 }
 
 export default function LotoShow() {
+  const [selectedColorId, setSelectedColorId] = useState(null);
   const [drawnNumber, setDrawnNumber] = useState(null);
   const [openedNumber, setOpenedNumber] = useState(null);
   const [correctNumbers, setCorrectNumbers] = useState([]);
@@ -156,6 +188,20 @@ export default function LotoShow() {
     }
     return result;
   }, [usedNumbers]);
+
+  const selectedColor = useMemo(
+    () => COLOR_OPTIONS.find((option) => option.id === selectedColorId) || null,
+    [selectedColorId],
+  );
+
+  const lotoThemeStyle = useMemo(() => {
+    if (!selectedColor) return undefined;
+    return {
+      "--loto-accent": selectedColor.color,
+      "--loto-accent-strong": selectedColor.strong,
+      "--loto-accent-soft": selectedColor.soft,
+    };
+  }, [selectedColor]);
 
   const currentQuestion = openedNumber ? QUESTION_MAP[openedNumber] : null;
 
@@ -238,7 +284,7 @@ export default function LotoShow() {
     setTextAnswer("");
   };
 
-  const restart = () => {
+  const resetBoard = () => {
     setDrawnNumber(null);
     setOpenedNumber(null);
     setCorrectNumbers([]);
@@ -250,12 +296,26 @@ export default function LotoShow() {
     setIsGameOver(false);
   };
 
+  const restart = () => {
+    resetBoard();
+  };
+
+  const handleSelectColor = (colorId) => {
+    setSelectedColorId(colorId);
+    resetBoard();
+  };
+
+  const handleChangeColor = () => {
+    setSelectedColorId(null);
+    resetBoard();
+  };
+
   const gameResultText = winningLine
     ? "Kết thúc: đã có người đạt 3 ô liên tiếp."
     : "Đã mở hết 9 ô nhưng chưa có đường 3 ô liên tiếp.";
 
   return (
-    <section className="loto-wrap reveal visible">
+    <section className="loto-wrap reveal visible" style={lotoThemeStyle}>
       <div className="loto-bg-layer" />
       <div className="loto-overlay" />
 
@@ -268,151 +328,185 @@ export default function LotoShow() {
           </p>
         </header>
 
-        <div className="loto-main-grid">
-          <div className="loto-board-panel">
-            <div className="loto-board">
-              {Array.from({ length: 9 }, (_, idx) => {
-                const n = idx + 1;
-                const isWrong = wrongNumbers.includes(n);
-                const isCorrect = correctNumbers.includes(n);
-                const isCurrentDraw = drawnNumber === n;
-                const isActive = openedNumber === n;
-                const inWinningLine = winningLine
-                  ? winningLine.includes(n)
-                  : false;
-
-                let className = "loto-cell";
-                if (isWrong) className += " wrong";
-                if (isCorrect) className += " correct";
-                if (isCurrentDraw && !isWrong && !isCorrect)
-                  className += " drawn";
-                if (isActive) className += " active";
-                if (inWinningLine) className += " winner";
-
-                return (
-                  <button
-                    key={n}
-                    className={className}
-                    onClick={() => openQuestion(n)}
-                    disabled={
-                      isWrong ||
-                      isCorrect ||
-                      isGameOver ||
-                      drawnNumber !== n ||
-                      feedback !== null
-                    }
-                  >
-                    {n}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="loto-controls">
-              <button
-                className="loto-btn spin"
-                onClick={spinNumber}
-                disabled={
-                  isGameOver ||
-                  drawnNumber !== null ||
-                  openedNumber !== null ||
-                  feedback !== null ||
-                  availableNumbers.length === 0
-                }
-              >
-                Quay Lô Tô
-              </button>
-              <button className="loto-btn reset" onClick={restart}>
-                Chơi lại
-              </button>
-            </div>
-
-            <p className="loto-drawn-number">
-              Số quay ra: <strong>{drawnNumber ?? "--"}</strong>
-            </p>
-            <p className="loto-hint">Bấm vào ô vừa quay để trả lời câu hỏi.</p>
-          </div>
-
-          <div className="loto-qa-panel">
-            {!openedNumber && !feedback && !isGameOver && (
-              <div className="loto-empty">
-                <p>Hãy bấm Quay Lô Tô để bắt đầu.</p>
-              </div>
-            )}
-
-            {currentQuestion && (
-              <div className="loto-question-box">
-                <div className="loto-question-title">
-                  {currentQuestion.title}
-                </div>
-                <p className="loto-question-text">{currentQuestion.question}</p>
-
-                {currentQuestion.type === "mcq" && (
-                  <div className="loto-options">
-                    {currentQuestion.options.map((option, idx) => {
-                      const isPicked = selectedOption === idx;
-                      return (
-                        <button
-                          key={option}
-                          className={`loto-option ${isPicked ? "picked" : ""}`}
-                          onClick={() => setSelectedOption(idx)}
-                        >
-                          <span>{LABELS[idx]}.</span>
-                          <span>{option}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {currentQuestion.type === "fill" && (
-                  <div className="loto-fill-wrap">
-                    <input
-                      type="text"
-                      className="loto-fill-input"
-                      placeholder="Nhập đáp án"
-                      value={textAnswer}
-                      onChange={(e) => setTextAnswer(e.target.value)}
-                    />
-                  </div>
-                )}
-
-                <button className="loto-btn submit" onClick={submitAnswer}>
-                  Chốt đáp án
+        {!selectedColor && (
+          <div className="loto-color-screen">
+            <p className="loto-color-prompt">Chọn tờ của bạn đi nè!</p>
+            <div className="loto-color-grid">
+              {COLOR_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  className="loto-color-card"
+                  onClick={() => handleSelectColor(option.id)}
+                  aria-label={`Chọn màu ${option.name}`}
+                >
+                  <span
+                    className="loto-color-chip"
+                    style={{ backgroundColor: option.color }}
+                  />
                 </button>
-              </div>
-            )}
+              ))}
+            </div>
+          </div>
+        )}
 
-            {feedback && (
-              <div
-                className={`loto-feedback ${feedback.isCorrect ? "ok" : "bad"}`}
-              >
-                <p>
-                  {feedback.isCorrect
-                    ? "Chính xác! Ô này đã được mở thành công."
-                    : `Sai rồi! Đáp án đúng là ${feedback.answerText}. Ô này đã bị khóa màu xám.`}
-                </p>
-                {!isGameOver && (
-                  <button className="loto-btn next" onClick={nextRound}>
-                    Quay tiếp
-                  </button>
-                )}
+        {selectedColor && (
+          <div className="loto-main-grid">
+            <div className="loto-board-panel">
+              <div className="loto-color-badge">
+                Màu đã chọn: <strong>{selectedColor.name}</strong>
               </div>
-            )}
 
-            {isGameOver && (
-              <div className="loto-gameover">
-                <h3>{gameResultText}</h3>
-                {winningLine && (
-                  <p>Bộ 3 chiến thắng: {winningLine.join(" - ")}</p>
-                )}
+              <div className="loto-board">
+                {Array.from({ length: 9 }, (_, idx) => {
+                  const n = idx + 1;
+                  const isWrong = wrongNumbers.includes(n);
+                  const isCorrect = correctNumbers.includes(n);
+                  const isCurrentDraw = drawnNumber === n;
+                  const isActive = openedNumber === n;
+                  const inWinningLine = winningLine
+                    ? winningLine.includes(n)
+                    : false;
+
+                  let className = "loto-cell";
+                  if (isWrong) className += " wrong";
+                  if (isCorrect) className += " correct";
+                  if (isCurrentDraw && !isWrong && !isCorrect)
+                    className += " drawn";
+                  if (isActive) className += " active";
+                  if (inWinningLine) className += " winner";
+
+                  return (
+                    <button
+                      key={n}
+                      className={className}
+                      onClick={() => openQuestion(n)}
+                      disabled={
+                        isWrong ||
+                        isCorrect ||
+                        isGameOver ||
+                        drawnNumber !== n ||
+                        feedback !== null
+                      }
+                    >
+                      {n}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="loto-controls">
+                <button
+                  className="loto-btn spin"
+                  onClick={spinNumber}
+                  disabled={
+                    isGameOver ||
+                    drawnNumber !== null ||
+                    openedNumber !== null ||
+                    feedback !== null ||
+                    availableNumbers.length === 0
+                  }
+                >
+                  Quay Lô Tô
+                </button>
                 <button className="loto-btn reset" onClick={restart}>
-                  Làm ván mới
+                  Chơi lại
+                </button>
+                <button className="loto-btn reset" onClick={handleChangeColor}>
+                  Đổi màu
                 </button>
               </div>
-            )}
+
+              <p className="loto-drawn-number">
+                Số quay ra: <strong>{drawnNumber ?? "--"}</strong>
+              </p>
+              <p className="loto-hint">
+                Bấm vào ô vừa quay để trả lời câu hỏi.
+              </p>
+            </div>
+
+            <div className="loto-qa-panel">
+              {!openedNumber && !feedback && !isGameOver && (
+                <div className="loto-empty">
+                  <p>Hãy bấm Quay Lô Tô để bắt đầu.</p>
+                </div>
+              )}
+
+              {currentQuestion && (
+                <div className="loto-question-box">
+                  <div className="loto-question-title">
+                    {currentQuestion.title}
+                  </div>
+                  <p className="loto-question-text">
+                    {currentQuestion.question}
+                  </p>
+
+                  {currentQuestion.type === "mcq" && (
+                    <div className="loto-options">
+                      {currentQuestion.options.map((option, idx) => {
+                        const isPicked = selectedOption === idx;
+                        return (
+                          <button
+                            key={option}
+                            className={`loto-option ${isPicked ? "picked" : ""}`}
+                            onClick={() => setSelectedOption(idx)}
+                          >
+                            <span>{LABELS[idx]}.</span>
+                            <span>{option}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {currentQuestion.type === "fill" && (
+                    <div className="loto-fill-wrap">
+                      <input
+                        type="text"
+                        className="loto-fill-input"
+                        placeholder="Nhập đáp án"
+                        value={textAnswer}
+                        onChange={(e) => setTextAnswer(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  <button className="loto-btn submit" onClick={submitAnswer}>
+                    Chốt đáp án
+                  </button>
+                </div>
+              )}
+
+              {feedback && (
+                <div
+                  className={`loto-feedback ${feedback.isCorrect ? "ok" : "bad"}`}
+                >
+                  <p>
+                    {feedback.isCorrect
+                      ? "Chính xác! Ô này đã được mở thành công."
+                      : `Sai rồi! Đáp án đúng là ${feedback.answerText}. Ô này đã bị khóa màu xám.`}
+                  </p>
+                  {!isGameOver && (
+                    <button className="loto-btn next" onClick={nextRound}>
+                      Quay tiếp
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {isGameOver && (
+                <div className="loto-gameover">
+                  <h3>{gameResultText}</h3>
+                  {winningLine && (
+                    <p>Bộ 3 chiến thắng: {winningLine.join(" - ")}</p>
+                  )}
+                  <button className="loto-btn reset" onClick={restart}>
+                    Làm ván mới
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );
