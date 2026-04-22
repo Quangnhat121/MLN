@@ -119,8 +119,6 @@ const QUESTION_MAP = {
 
 const LABELS = ["A", "B", "C", "D"];
 
-const QUESTION_IDS = Object.keys(QUESTION_MAP).map(Number);
-
 const COLOR_LAYOUTS = {
   blue: [1, 5, 7, 3, 9, 2, 6, 8, 4],
   pink: [2, 8, 4, 1, 6, 9, 7, 3, 5],
@@ -177,9 +175,7 @@ export default function LotoShow() {
   const [selectedColorId, setSelectedColorId] = useState(null);
   const [drawnNumber, setDrawnNumber] = useState(null);
   const [openedCell, setOpenedCell] = useState(null);
-  const [activeQuestionId, setActiveQuestionId] = useState(null);
-  const [remainingQuestionIds, setRemainingQuestionIds] =
-    useState(QUESTION_IDS);
+  const [openedNumber, setOpenedNumber] = useState(null);
   const [correctCells, setCorrectCells] = useState([]);
   const [wrongCells, setWrongCells] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -227,9 +223,7 @@ export default function LotoShow() {
     };
   }, [selectedColor]);
 
-  const currentQuestion = activeQuestionId
-    ? QUESTION_MAP[activeQuestionId]
-    : null;
+  const currentQuestion = openedNumber ? QUESTION_MAP[openedNumber] : null;
 
   const spinNumber = () => {
     if (
@@ -252,24 +246,20 @@ export default function LotoShow() {
       isGameOver ||
       feedback ||
       number !== drawnNumber ||
-      usedCells.has(cellIndex) ||
-      remainingQuestionIds.length === 0
+      usedCells.has(cellIndex)
     )
       return;
 
-    const randomIdx = Math.floor(Math.random() * remainingQuestionIds.length);
-    const randomQuestionId = remainingQuestionIds[randomIdx];
-
     setOpenedCell(cellIndex);
-    setActiveQuestionId(randomQuestionId);
+    setOpenedNumber(number);
     setSelectedOption(null);
     setTextAnswer("");
   };
 
   const resolveRound = (isCorrect) => {
     const targetCell = openedCell;
-    const targetQuestionId = activeQuestionId;
-    if (!targetCell || !targetQuestionId) return;
+    const targetNumber = openedNumber;
+    if (!targetCell || !targetNumber) return;
 
     const nextCorrect = isCorrect
       ? [...correctCells, targetCell]
@@ -278,14 +268,11 @@ export default function LotoShow() {
     const line = findWinningLine(nextCorrect);
     const allDone =
       nextCorrect.length + nextWrong.length === boardLayout.length;
-    const question = QUESTION_MAP[targetQuestionId];
+    const question = QUESTION_MAP[targetNumber];
 
     setCorrectCells(nextCorrect);
     setWrongCells(nextWrong);
     setWinningLine(line);
-    setRemainingQuestionIds((prev) =>
-      prev.filter((id) => id !== targetQuestionId),
-    );
     setFeedback({
       isCorrect,
       answerText:
@@ -318,7 +305,7 @@ export default function LotoShow() {
     setFeedback(null);
     setDrawnNumber(null);
     setOpenedCell(null);
-    setActiveQuestionId(null);
+    setOpenedNumber(null);
     setSelectedOption(null);
     setTextAnswer("");
   };
@@ -326,8 +313,7 @@ export default function LotoShow() {
   const resetBoard = () => {
     setDrawnNumber(null);
     setOpenedCell(null);
-    setActiveQuestionId(null);
-    setRemainingQuestionIds([...QUESTION_IDS]);
+    setOpenedNumber(null);
     setCorrectCells([]);
     setWrongCells([]);
     setSelectedOption(null);
